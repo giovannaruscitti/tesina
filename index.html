@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Tesina by giovannaruscitti</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Tesina</h1>
+      <h2 class="project-tagline"></h2>
+      <a href="https://github.com/giovannaruscitti/tesina" class="btn">View on GitHub</a>
+      <a href="https://github.com/giovannaruscitti/tesina/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/giovannaruscitti/tesina/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <p>&lt;!DOCTYPE html&gt;</p>
+
+<p></p>
+
+<p></p>
+
+<p>
+
+</p>
+
+<p></p>
+
+<p></p>Pratical learning machine project
+
+
+
+<p>
+</p>
+
+
+
+
+
+
+
+code{white-space: pre;}
+
+<p></p>
+
+
+
+
+  pre:not([class]) {
+    background-color: white;
+  }
+
+
+
+
+<p></p>
+
+<p></p>
+
+
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img { 
+  max-width:100%; 
+  height: auto; 
+}
+
+
+<div>
+
+
+<div id="header">
+<h1>
+<a id="pratical-learning-machine-project" class="anchor" href="#pratical-learning-machine-project" aria-hidden="true"><span class="octicon octicon-link"></span></a>Pratical learning machine project</h1>
+<h4>
+<a id="giovanna-ruscitti" class="anchor" href="#giovanna-ruscitti" aria-hidden="true"><span class="octicon octicon-link"></span></a><em>Giovanna Ruscitti</em>
+</h4>
+<h4>
+<a id="sunday-september-27-2015" class="anchor" href="#sunday-september-27-2015" aria-hidden="true"><span class="octicon octicon-link"></span></a><em>Sunday, September 27, 2015</em>
+</h4>
+</div>
+
+<div id="introduction">
+<h2>
+<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h2>
+<p>The objective of the present work is to predict the manner in which exercises are done. The model will be created using a training dataset containing data from six people that were asked to perform the exercises in 5 different ways. The â€œclasseâ€ variable of the training set defines the manner in which the exercises were done. A decision tree will be created to predict the â€œclasseâ€ using data from accelerometers on the belt, forearm, arm, and dumbell. A cross-validation will be used to evaluate the model.</p>
+</div>
+
+<div id="data-cleaning">
+<h2>
+<a id="data-cleaning" class="anchor" href="#data-cleaning" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data cleaning</h2>
+<p>The training dataset is composed of 160 variables and 19622 records.</p>
+<pre><code>dim(allTraining)</code></pre>
+<pre><code>## [1] 19622   160</code></pre>
+<p>After an overview to the training dataset I have noted that there are some records with DIV!0 values and that such values correspond to the â€œyesâ€ value of â€œnew_windowâ€ variable.</p>
+<pre><code>table(allTraining$new_window)</code></pre>
+<pre><code>## 
+##    no   yes 
+## 19216   406</code></pre>
+<p>Since there are only 406 â€œyesâ€ values for â€œnew_windowâ€ variable, I decided to filter such records.</p>
+<pre><code>allTrainingFilt &lt;- subset(allTraining,allTraining$new_window =="no")</code></pre>
+</div>
+
+<div id="variables">
+<h2>
+<a id="variables" class="anchor" href="#variables" aria-hidden="true"><span class="octicon octicon-link"></span></a>Variables</h2>
+<p>In order to make the training dataset as simple as possible I have deleted all variables having only one different value, since they donâ€™t give any further information.</p>
+<pre><code>toKeep &lt;- function(v){if (length(unique(v))&lt;=1) 0 else 1}
+valToKeep &lt;- c(1:160)*sapply(allTrainingFilt[,],toKeep)
+valToKeep &lt;- valToKeep[valToKeep!=0]
+myTraining &lt;-allTrainingFilt[valToKeep]</code></pre>
+<p>I have also dropped all the variables not related to accelerometers:</p>
+<ul>
+<li>X</li>
+<li>user_name</li>
+<li>raw_timestamp_part_1</li>
+<li>raw_timestamp_part_2</li>
+<li>cvtd_timestamp</li>
+<li>new_window</li>
+<li>num_window</li>
+</ul>
+</div>
+
+<div id="preliminary-models">
+<h2>
+<a id="preliminary-models" class="anchor" href="#preliminary-models" aria-hidden="true"><span class="octicon octicon-link"></span></a>Preliminary models</h2>
+<p>In order to choose the method to be used, I have created two different models, one using <em>rpart</em> method and the other using <em>random forest</em> method with 50 trees. Since better results were obtained in terms of accuracy with <em>random forest</em> method (accuracy = <strong>99%</strong>) with respect to <em>rpart</em> method (accuracy = <strong>51%</strong>), I decided to go on with random forest method.</p>
+<pre><code>#modFit.rpart &lt;- train(classe~., data=myTraining, method="rpart")</code></pre>
+<pre><code>## CART 
+## 
+## 19216 samples
+##    52 predictor
+##     5 classes: 'A', 'B', 'C', 'D', 'E' 
+## 
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 19216, 19216, 19216, 19216, 19216, 19216, ... 
+## Resampling results across tuning parameters:
+## 
+##   cp          Accuracy   Kappa       Accuracy SD  Kappa SD  
+##   0.03572208  0.5124576  0.36740574  0.02116481   0.03484043
+##   0.06004608  0.4138041  0.20237167  0.06361388   0.10647632
+##   0.11465988  0.3215876  0.05370494  0.03949192   0.06185806
+## 
+## Accuracy was used to select the optimal model using  the largest value.
+## The final value used for the model was cp = 0.03572208.</code></pre>
+<pre><code>#modFit.rf &lt;- train(classe~., data=myTraining, method="rf", do.trace=TRUE, ntree=50)</code></pre>
+<pre><code>## Random Forest 
+## 
+## 19216 samples
+##    52 predictor
+##     5 classes: 'A', 'B', 'C', 'D', 'E' 
+## 
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 19216, 19216, 19216, 19216, 19216, 19216, ... 
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy   Kappa      Accuracy SD  Kappa SD   
+##    2    0.9914515  0.9891838  0.001600487  0.002021207
+##   27    0.9915068  0.9892542  0.001656440  0.002090704
+##   52    0.9817915  0.9769590  0.004664746  0.005903181
+## 
+## Accuracy was used to select the optimal model using  the largest value.
+## The final value used for the model was mtry = 27.</code></pre>
+</div>
+
+<div id="final-model">
+<h2>
+<a id="final-model" class="anchor" href="#final-model" aria-hidden="true"><span class="octicon octicon-link"></span></a>Final model</h2>
+<p>A model has been created with <em>random forest</em> method and the validation of the model has been done using the <em>cross-validation</em> methodology. Even if cross-validation will been used, I have decided to split data into training and test in other to have some data to perform a further model behavior evaluation.</p>
+<pre><code>set.seed(124)
+inTrain&lt;-createDataPartition(y=myTraining$classe,p=0.75,list=FALSE)
+training&lt;-myTraining[inTrain,]
+testing&lt;-myTraining[-inTrain,]</code></pre>
+<p>A random forest model will be created with 200 trees and a 5-fold cross-validation will be used to validate the model.</p>
+<pre><code>#tc&lt;-trainControl(method="cv",number=5)
+#modFit.rf.final &lt;- train(classe~., data=training, method="rf", ntree=200,trControl=tc, importance=TRUE)</code></pre>
+<p>As shown below the accuracy is <strong>99.1%</strong>.</p>
+<pre><code>modFit.rf.final</code></pre>
+<pre><code>## Random Forest 
+## 
+## 14414 samples
+##    52 predictor
+##     5 classes: 'A', 'B', 'C', 'D', 'E' 
+## 
+## No pre-processing
+## Resampling: Cross-Validated (5 fold) 
+## Summary of sample sizes: 11530, 11531, 11532, 11532, 11531 
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy   Kappa      Accuracy SD  Kappa SD   
+##    2    0.9900793  0.9874487  0.002089024  0.002643198
+##   27    0.9907732  0.9883267  0.002159104  0.002731187
+##   52    0.9829337  0.9784078  0.003824601  0.004840447
+## 
+## Accuracy was used to select the optimal model using  the largest value.
+## The final value used for the model was mtry = 27.</code></pre>
+</div>
+
+<div id="error-evaluation">
+<h2>
+<a id="error-evaluation" class="anchor" href="#error-evaluation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Error evaluation</h2>
+<p>In the picture below it is possible to see the out of bag (OOB) error behaviour depends on the number of trees. <img title alt width="672"></p>
+<p>When the number is greater than 50 the error rate tends to be constant. Since the computational time is not so high I decided to keep 200 trees in my final model. Using the model to predict the training set it is possible to see that the in-sample error is zero.</p>
+<pre><code>pred&lt;-predict(modFit.rf.final$finalModel,newdata=training)
+confusionMatrix(data=pred,reference=training$classe)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 4104    0    0    0    0
+##          B    0 2789    0    0    0
+##          C    0    0 2514    0    0
+##          D    0    0    0 2361    0
+##          E    0    0    0    0 2646
+## 
+## Overall Statistics
+##                                      
+##                Accuracy : 1          
+##                  95% CI : (0.9997, 1)
+##     No Information Rate : 0.2847     
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16  
+##                                      
+##                   Kappa : 1          
+##  Mcnemar's Test P-Value : NA         
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            1.0000   1.0000   1.0000   1.0000   1.0000
+## Specificity            1.0000   1.0000   1.0000   1.0000   1.0000
+## Pos Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
+## Neg Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
+## Prevalence             0.2847   0.1935   0.1744   0.1638   0.1836
+## Detection Rate         0.2847   0.1935   0.1744   0.1638   0.1836
+## Detection Prevalence   0.2847   0.1935   0.1744   0.1638   0.1836
+## Balanced Accuracy      1.0000   1.0000   1.0000   1.0000   1.0000</code></pre>
+<p>The out of sample error is <strong>0.79%</strong> (see OOB estimate of error rate below) and, as expected, it greater than the in-sample error.</p>
+<pre><code>modFit.rf.final$finalModel</code></pre>
+<pre><code>## 
+## Call:
+##  randomForest(x = x, y = y, ntree = 200, mtry = param$mtry, importance = TRUE,      do.trace = TRUE) 
+##                Type of random forest: classification
+##                      Number of trees: 200
+## No. of variables tried at each split: 27
+## 
+##         OOB estimate of  error rate: 0.79%
+## Confusion matrix:
+##      A    B    C    D    E class.error
+## A 4097    6    0    0    1 0.001705653
+## B   24 2753   10    2    0 0.012907852
+## C    0   12 2493    9    0 0.008353222
+## D    1    2   30 2326    2 0.014824227
+## E    0    2    6    7 2631 0.005668934</code></pre>
+<p>As a further error evaluation I have generated the confusion matrix</p>
+<pre><code>pred&lt;-predict(modFit.rf.final,newdata=testing)
+confusionMatrix(data=pred,reference=testing$classe)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1366    7    0    0    0
+##          B    1  919    4    1    0
+##          C    0    3  828    8    1
+##          D    0    0    6  777    3
+##          E    0    0    0    0  878
+## 
+## Overall Statistics
+##                                           
+##                Accuracy : 0.9929          
+##                  95% CI : (0.9901, 0.9951)
+##     No Information Rate : 0.2847          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.991           
+##  Mcnemar's Test P-Value : NA              
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            0.9993   0.9892   0.9881   0.9885   0.9955
+## Specificity            0.9980   0.9985   0.9970   0.9978   1.0000
+## Pos Pred Value         0.9949   0.9935   0.9857   0.9885   1.0000
+## Neg Pred Value         0.9997   0.9974   0.9975   0.9978   0.9990
+## Prevalence             0.2847   0.1935   0.1745   0.1637   0.1837
+## Detection Rate         0.2845   0.1914   0.1724   0.1618   0.1828
+## Detection Prevalence   0.2859   0.1926   0.1749   0.1637   0.1828
+## Balanced Accuracy      0.9986   0.9938   0.9925   0.9932   0.9977</code></pre>
+<p>and the error rate for the testing dataset.</p>
+<pre><code>errRate = function(values,prediction){100*sum(values!=pred)/length(values)}
+errRate(testing$classe,pred)</code></pre>
+<pre><code>## [1] 0.7080383</code></pre>
+<p>I have obtained an error rate of <strong>0.71%</strong>, that is very close to the OOB estimate obtained above.</p>
+</div>
+
+<p></p>
+</div>
+
+
+
+
+
+
+
+<p>
+</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/giovannaruscitti/tesina">Tesina</a> is maintained by <a href="https://github.com/giovannaruscitti">giovannaruscitti</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
